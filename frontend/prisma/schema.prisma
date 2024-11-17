@@ -1,0 +1,54 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  documents     Document[]
+  responses     Response[]
+}
+
+model Document {
+  id          String    @id @default(cuid())
+  title       String
+  fileName    String
+  fileSize    Int
+  fileType    String
+  filePath    String    // Path to the stored file
+  status      String    @default("processing") // processing, processed, error
+  content     String?   // Extracted text content
+  metadata    Json?     // Additional metadata
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  responses   Response[]
+}
+
+model Response {
+  id          String    @id @default(cuid())
+  title       String
+  content     String    // The response content
+  status      String    @default("draft") // draft, review, final
+  metadata    Json?     // Additional metadata
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  documentId  String
+  document    Document  @relation(fields: [documentId], references: [id])
+}
